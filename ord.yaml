@@ -1,0 +1,14 @@
+bitcoin_data_dir: D:\Program\Bitcoin\data\regtest
+bitcoin_rpc_url: 127.0.0.1:18443
+bitcoin_rpc_password: mempool
+bitcoin_rpc_username: mempool
+chain: regtest
+
+data_dir: D:\Program\Bitcoin\data\regtest\ord
+index_addresses: true
+index_cache_size: 1000000000
+index_runes: true
+index_sats: true
+index_transactions: true
+integration_test: true
+no_index_inscriptions: true

@@ -1,0 +1,70 @@
+services:
+  web:
+    environment:
+      FRONTEND_HTTP_PORT: "8080"
+      BACKEND_MAINNET_HTTP_HOST: "api"
+    image: mempool/frontend:latest
+    container_name: mempool-frontend
+    user: "1000:1000"
+    stop_grace_period: 1m
+    command: "./wait-for db:3306 --timeout=720 -- nginx -g 'daemon off;'"
+    networks:
+      - mempool
+    ports:
+      - 8089:8080
+  api:
+    container_name: mempool_api
+    environment:
+      # mempool did not support regtest
+      # https://github.com/mempool/mempool/issues/1916
+      # MEMPOOL_NETWORK: "regtest"
+      MEMPOOL_BACKEND: "electrum"
+      ELECTRUM_HOST: "host.docker.internal"
+      ELECTRUM_PORT: "50001"
+      ELECTRUM_TLS_ENABLED: "false"
+      # https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
+      CORE_RPC_HOST: "host.docker.internal"
+      # CORE_RPC_HOST: "192.168.100.68"
+      CORE_RPC_PORT: "18443"
+      CORE_RPC_USERNAME: "mempool" # Specified in bitcoin.conf rpcauth
+      CORE_RPC_PASSWORD: "mempool" # Specified in bitcoin.conf rpcauth
+      # CORE_RPC_COOKIE: true
+      # CORE_RPC_COOKIE_PATH: "/cookie/.cookie"
+      DATABASE_ENABLED: "true"
+      DATABASE_HOST: "mempool_db"
+      DATABASE_DATABASE: "mempool"
+      DATABASE_USERNAME: "mempool"
+      DATABASE_PASSWORD: "mempool"
+      STATISTICS_ENABLED: "true"
+    image: mempool/backend:latest
+    user: "1000:1000"
+    stop_grace_period: 1m
+    command: "./wait-for-it.sh db:3306 --timeout=720 --strict -- ./start.sh"
+    networks:
+      - mempool
+    volumes:
+      - data:/backend/cache
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  db:
+    container_name: mempool_db
+    environment:
+      MYSQL_DATABASE: "mempool"
+      MYSQL_USER: "mempool"
+      MYSQL_PASSWORD: "mempool"
+      MYSQL_ROOT_PASSWORD: "admin"
+    image: mariadb:lts
+    user: "999:999"
+    stop_grace_period: 1m
+    networks:
+      - mempool
+    volumes:
+      - mysql:/var/lib/mysql
+
+volumes:
+  data:
+  mysql:
+
+networks:
+  mempool:
