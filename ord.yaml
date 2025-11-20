@@ -11,4 +11,4 @@ index_runes: true
 index_sats: true
 index_transactions: true
 integration_test: true
-no_index_inscriptions: true
+no_index_inscriptions: false
